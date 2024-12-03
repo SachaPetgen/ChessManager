@@ -6,7 +6,17 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChessManager.Applications",
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChessManager.Domain", "ChessManager.Domain\ChessManager.Domain.csproj", "{796B10FB-0231-4410-8F85-96BF03BE6949}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChessManager.Infrastructure", "ChessManager.Infrastructure\ChessManager.Infrastructure.csproj", "{52ADC343-0B47-4880-9374-0DBA3D1C86F0}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChessManager.Infrastructure.DB", "ChessManager.Infrastructure.DB\ChessManager.Infrastructure.DB.csproj", "{52ADC343-0B47-4880-9374-0DBA3D1C86F0}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Domain", "Domain", "{DB8D36DE-9DA2-4B26-BB7C-17E67101A31E}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Presentation", "Presentation", "{94CE9648-A065-4D00-9B7D-573759C69238}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "AppCore", "AppCore", "{B1560710-19F3-43DA-ABCF-B763AD98E1E4}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Infrastructure", "Infrastructure", "{FF9ACEF7-BF81-4F45-AF04-AFC401BD09ED}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChessManager.Infrastructure.Mail", "ChessManager.Infrastructure.Mail\ChessManager.Infrastructure.Mail.csproj", "{ACD46D41-AF8E-4E7D-B864-804BCA42DA2B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -30,5 +40,16 @@ Global
 		{52ADC343-0B47-4880-9374-0DBA3D1C86F0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{52ADC343-0B47-4880-9374-0DBA3D1C86F0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{52ADC343-0B47-4880-9374-0DBA3D1C86F0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{ACD46D41-AF8E-4E7D-B864-804BCA42DA2B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{ACD46D41-AF8E-4E7D-B864-804BCA42DA2B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{ACD46D41-AF8E-4E7D-B864-804BCA42DA2B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{ACD46D41-AF8E-4E7D-B864-804BCA42DA2B}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{796B10FB-0231-4410-8F85-96BF03BE6949} = {DB8D36DE-9DA2-4B26-BB7C-17E67101A31E}
+		{BBF82A2C-6D7E-409B-9DFB-5D2CFD6CBC6E} = {94CE9648-A065-4D00-9B7D-573759C69238}
+		{89C57239-F4E1-4511-944B-4D2CA786602A} = {B1560710-19F3-43DA-ABCF-B763AD98E1E4}
+		{52ADC343-0B47-4880-9374-0DBA3D1C86F0} = {FF9ACEF7-BF81-4F45-AF04-AFC401BD09ED}
+		{ACD46D41-AF8E-4E7D-B864-804BCA42DA2B} = {FF9ACEF7-BF81-4F45-AF04-AFC401BD09ED}
 	EndGlobalSection
 EndGlobal

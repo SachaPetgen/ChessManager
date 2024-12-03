@@ -8,11 +8,13 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <PackageReference Include="Microsoft.Data.SqlClient" Version="5.2.2" />
         <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0"/>
     </ItemGroup>
 
     <ItemGroup>
       <Folder Include="Controllers\" />
+      <Folder Include="DTO\" />
     </ItemGroup>
 
 </Project>
