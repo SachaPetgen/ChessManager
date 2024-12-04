@@ -8,13 +8,16 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <PackageReference Include="MailKit" Version="4.8.0" />
         <PackageReference Include="Microsoft.Data.SqlClient" Version="5.2.2" />
         <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0"/>
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="Controllers\" />
-      <Folder Include="DTO\" />
+      <ProjectReference Include="..\ChessManager.Applications\ChessManager.Applications.csproj" />
+      <ProjectReference Include="..\ChessManager.Domain\ChessManager.Domain.csproj" />
+      <ProjectReference Include="..\ChessManager.Infrastructure.DB\ChessManager.Infrastructure.DB.csproj" />
+      <ProjectReference Include="..\ChessManager.Infrastructure.Mail\ChessManager.Infrastructure.Mail.csproj" />
     </ItemGroup>
 
 </Project>

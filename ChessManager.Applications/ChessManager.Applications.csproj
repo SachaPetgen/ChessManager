@@ -7,11 +7,11 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <Folder Include="Services\" />
+      <ProjectReference Include="..\ChessManager.Domain\ChessManager.Domain.csproj" />
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\ChessManager.Domain\ChessManager.Domain.csproj" />
+      <PackageReference Include="Isopoh.Cryptography.Argon2" Version="2.0.0" />
     </ItemGroup>
 
 </Project>

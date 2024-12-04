@@ -6,6 +6,8 @@ public interface IMemberRepository : IBaseRepository<Member>
 {
     
     
+    Task<Member?> GetByEmail(string email);
+    
     
 
 }

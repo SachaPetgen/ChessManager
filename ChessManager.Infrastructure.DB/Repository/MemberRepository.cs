@@ -1,3 +1,4 @@
+using System.Data;
 using ChessManager.Applications.Interfaces.Repo;
 using ChessManager.Domain.Models;
 using Dapper;
@@ -15,33 +16,39 @@ public class MemberRepository : IMemberRepository
        _sqlConnection = sqlConnection;
     }
 
-    public async Task<Member?> GetByIdAsync(int id)
+    public Task<Member?> GetByIdAsync(int id)
     {
-        return await _sqlConnection.QuerySingleOrDefaultAsync<Member?>(
+        return _sqlConnection.QuerySingleOrDefaultAsync<Member?>(
             "GetMemberById",
-            new { id },
+            new { MemberId = id },
+            commandType: System.Data.CommandType.StoredProcedure
+        );
+    }
+
+    public Task<Member?> GetByEmail(string email)
+    {
+        return _sqlConnection.QuerySingleOrDefaultAsync<Member?>(
+            "GetMemberByEmail",
+            new { Email = email },
             commandType: System.Data.CommandType.StoredProcedure
         );
     }
 
     public Task<IEnumerable<Member>> GetAllAsync()
     {
-        throw new NotImplementedException();
+        return _sqlConnection.QueryAsync<Member>(
+            "GetAllMembers",
+            commandType: System.Data.CommandType.StoredProcedure
+        );
     }
 
-    public Task<Member> CreateAsync(Member entity)
+    public async Task<Member?> CreateAsync(Member entity)
     {
-        throw new NotImplementedException();
-    }
-
-    public Task<Member> UpdateAsync(Member entity)
-    {
-        throw new NotImplementedException();
-    }
-
-    public Task<bool> DeleteAsync(int id)
-    {
-        throw new NotImplementedException();
+        return await _sqlConnection.QuerySingleOrDefaultAsync<Member>(
+            "CreateMember",
+            new { entity.Pseudo, entity.Email, entity.Password, entity.Role, entity.Gender, entity.Elo, entity.BirthDate },
+            commandType: System.Data.CommandType.StoredProcedure
+        );
     }
 
 }
