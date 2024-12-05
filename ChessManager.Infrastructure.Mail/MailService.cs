@@ -1,3 +1,4 @@
+using ChessManager.Infrastructure.Mail.Config;
 using MailKit.Net.Smtp;
 using Microsoft.Extensions.Configuration;
 using MimeKit;
@@ -12,12 +13,12 @@ public class MailService : IMailService
     private readonly string _smtpHost;
     private readonly int _smtpPort;
     
-    public MailService(string noReplyName, string noReplyEmail, string smtpHost, int smtpPort)
+    public MailService(MailConfig config)
     {
-        _noReplyName = noReplyName;
-        _noReplyEmail = noReplyEmail;
-        _smtpHost = smtpHost;
-        _smtpPort = smtpPort;
+        _noReplyName = config.NoReplyEmail;
+        _noReplyEmail = config.NoReplyEmail;
+        _smtpHost = config.SmtpHost;
+        _smtpPort = config.SmtpPort;
     }
     
     private SmtpClient GetSmtpClient()
@@ -30,7 +31,7 @@ public class MailService : IMailService
     
     public void SendMail(string emailTo, string name,  string subject, string text)
     {
-        
+
         MimeMessage email = new MimeMessage();
 
         email.From.Add(new MailboxAddress(_noReplyName, _noReplyEmail));

@@ -60,3 +60,4 @@ BEGIN
     WHERE Id = @MemberId;
 END;
 go
+

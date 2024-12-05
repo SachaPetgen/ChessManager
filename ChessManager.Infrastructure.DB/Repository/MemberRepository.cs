@@ -46,7 +46,7 @@ public class MemberRepository : IMemberRepository
     {
         return await _sqlConnection.QuerySingleOrDefaultAsync<Member>(
             "CreateMember",
-            new { entity.Pseudo, entity.Email, entity.Password, entity.Role, entity.Gender, entity.Elo, entity.BirthDate },
+            new { entity.Pseudo, entity.Email, entity.Password, entity.Role, entity.Gender, entity.Elo, entity.BirthDate, entity.CreatedAt, entity.UpdatedAt },
             commandType: System.Data.CommandType.StoredProcedure
         );
     }

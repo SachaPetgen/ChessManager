@@ -18,7 +18,7 @@ public class MemberCreateDTO
     [Required]
     public Role Role { get; set; }
 
-    public int Elo { get; set; }
+    public int? Elo { get; set; }
 
     [Required]
     public DateTime BirthDate { get; set; }

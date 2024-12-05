@@ -2,6 +2,7 @@ using ChessManager.Applications.Interfaces.Repo;
 using ChessManager.Applications.Interfaces.Services;
 using ChessManager.Applications.Services;
 using ChessManager.Infrastructure.Mail;
+using ChessManager.Infrastructure.Mail.Config;
 using ChessManager.Infrastructure.Repository;
 using Microsoft.Data.SqlClient;
 
@@ -19,22 +20,26 @@ builder.Services.AddControllers(options =>
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddTransient<SqlConnection>(_ => new SqlConnection(builder.Configuration.GetConnectionString("DefaultConnection")));
-builder.Services.AddScoped<IMemberRepository, MemberRepository>();
+
+
 builder.Services.AddScoped<IPasswordService, PasswordService>();
 
+builder.Services.AddScoped<IMemberRepository, MemberRepository>();
 builder.Services.AddScoped<IMemberService, MemberService> ();
 
-builder.Services.AddTransient<IMailService>(provider =>
-{
-    IConfiguration configuration = provider.GetRequiredService<IConfiguration>();
-    
-    string noReplyName = configuration.GetValue<string>("Smtp:NoReply:Name")!;
-    string noReplyEmail = configuration.GetValue<string>("Smtp:NoReply:From")!;
-    string smtpHost = configuration.GetValue<string>("Smtp:Host")!;
-    int smtpPort = configuration.GetValue<int>("Smtp:Port")!;
-    
-    return new MailService(noReplyName, noReplyEmail, smtpHost, smtpPort);
-});
+builder.Services.AddScoped<ITournamentService, TournamentService>();
+builder.Services.AddScoped<ITournamentRepository, TournamentRepository>();
+
+builder.Services.AddSingleton<MailConfig>(provider =>
+  new MailConfig(
+        builder.Configuration.GetValue<string>("Smtp:NoReply:Name")!,
+        builder.Configuration.GetValue<string>("Smtp:NoReply:From")!,
+        builder.Configuration.GetValue<string>("Smtp:Host")!,
+        builder.Configuration.GetValue<int>("Smtp:Port")!)
+);
+
+
+builder.Services.AddScoped<IMailService, MailService>();
 
 var app = builder.Build();
 

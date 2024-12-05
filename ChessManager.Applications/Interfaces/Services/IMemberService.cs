@@ -3,7 +3,12 @@ using ChessManager.Domain.Models;
 namespace ChessManager.Applications.Interfaces.Services;
 
 
-public interface IMemberService : IBaseService<Member>
+public interface IMemberService
 {
-    
+
+    public Task<Member?> GetByIdAsync(int id);
+
+    public Task<IEnumerable<Member>> GetAllAsync();
+
+    public Task<Member?> CreateAsync(Member entity);
 }

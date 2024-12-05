@@ -5,7 +5,6 @@ namespace ChessManager.Mappers;
 
 public static class MemberMapper
 {
-    
     public static MemberViewListDTO ToMemberViewListDto(this Member member)
     {
         return new MemberViewListDTO()
@@ -16,10 +15,10 @@ public static class MemberMapper
             Role = member.Role,
             Gender = member.Gender,
             Elo = member.Elo,
-            BirthDate = member.BirthDate,
+            BirthDate = member.BirthDate
         }; 
     }
-
+    
     public static Member ToMember(this MemberCreateDTO memberCreateDto)
     {
         return new Member()
@@ -28,7 +27,7 @@ public static class MemberMapper
             Email = memberCreateDto.Email,
             Role = memberCreateDto.Role,
             Gender = memberCreateDto.Gender,
-            Elo = memberCreateDto.Elo == 0 ? 1200 : memberCreateDto.Elo,
+            Elo = memberCreateDto.Elo,
             BirthDate = memberCreateDto.BirthDate
         };
     }

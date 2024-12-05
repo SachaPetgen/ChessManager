@@ -83,19 +83,15 @@ public class MemberController : ControllerBase
             return BadRequest(new { message = "Invalid data" });
         }
         
-        string randomPassword = _passwordService.GenerateRandomPassword();
-        
         try
         {
             Member? memberToAdd = memberCreateDTO.ToMember();
-            memberToAdd.Password = _passwordService.HashPassword(randomPassword);
             
             Member? member = await _memberService.CreateAsync(memberToAdd);
             if (member is null)
             {
                 return StatusCode(500, "Failed to create member.");
             }
-            _mailService.SendMail(member.Email, member.Pseudo, MailTemplate.GetSubjectForNewMember(member), MailTemplate.GetBodyForNewMember(member, randomPassword));
             
             return CreatedAtAction(nameof(GetByIdAsync), new { id = member.Id }, member.ToMemberViewListDto());
         }

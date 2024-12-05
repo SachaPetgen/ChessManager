@@ -8,6 +8,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\ChessManager.Domain\ChessManager.Domain.csproj" />
+      <ProjectReference Include="..\ChessManager.Infrastructure.Mail\ChessManager.Infrastructure.Mail.csproj" />
     </ItemGroup>
 
     <ItemGroup>
