@@ -7,7 +7,9 @@ public interface IMemberRepository : IBaseRepository<Member>
     
     
     Task<Member?> GetByEmail(string email);
-    
-    
+
+    Task<Member?> GetByPseudo(string pseudo);
+
+
 
 }

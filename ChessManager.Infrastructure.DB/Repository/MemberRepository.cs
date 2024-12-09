@@ -34,6 +34,16 @@ public class MemberRepository : IMemberRepository
         );
     }
 
+    public Task<Member?> GetByPseudo(string pseudo)
+    {
+        return _sqlConnection.QuerySingleOrDefaultAsync<Member?>(
+            "GetMemberByPseudo",
+            new { Pseudo = pseudo },
+            commandType: System.Data.CommandType.StoredProcedure
+        );
+        
+    }
+
     public Task<IEnumerable<Member>> GetAllAsync()
     {
         return _sqlConnection.QueryAsync<Member>(

@@ -10,7 +10,6 @@ public interface ITournamentService
     
     public Task<IEnumerable<Tournament>> GetLastModified(int number);
 
-    public Task<IEnumerable<Member>> GetMembers(int id);
     public Task<Tournament?> CreateAsync(Tournament entity);
     
     public Task<bool> DeleteAsync(int id);

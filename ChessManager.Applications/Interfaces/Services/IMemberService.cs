@@ -11,4 +11,6 @@ public interface IMemberService
     public Task<IEnumerable<Member>> GetAllAsync();
 
     public Task<Member?> CreateAsync(Member entity);
+    
+    public Task<string> Login(string identifier, string password);
 }

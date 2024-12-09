@@ -3,6 +3,7 @@ using ChessManager.Domain.Exceptions;
 using ChessManager.Domain.Models;
 using ChessManager.DTO.Tournament;
 using ChessManager.Mappers;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ChessManager.Controllers;
@@ -56,11 +57,8 @@ public class TournamentController : ControllerBase
             {
                 return NotFound();
             }
-
-            TournamentViewDTO tournamentViewDto = tournament.ToTournamentViewDto();
-            tournamentViewDto.Members = (await _tournamentService.GetMembers(id)).Select(m => m.ToMemberViewListDto());
             
-            return Ok(tournamentViewDto);
+            return Ok(tournament.ToTournamentViewDto());
         }
         catch (DbErrorException e)
         {
@@ -97,15 +95,19 @@ public class TournamentController : ControllerBase
     [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [Authorize(Roles = "Admin")]
     public async Task<ActionResult<TournamentViewDTO>> CreateAsync([FromBody] TournamentCreateDTO createTournamentDTO)
     {
         try
         {
             Tournament tournament = createTournamentDTO.ToTournament();
             
-            
             Tournament? createdTournament = await _tournamentService.CreateAsync(tournament);
-            
+
+            if (createdTournament is null)
+            {
+                return BadRequest();
+            }
             
             return CreatedAtAction(nameof(GetByIdAsync), new { id = createdTournament.Id }, createdTournament.ToTournamentViewDto());
         }
@@ -123,6 +125,7 @@ public class TournamentController : ControllerBase
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [Authorize(Roles = "Admin")]
     public async Task<ActionResult> DeleteAsync([FromRoute] int id)
     {
         try

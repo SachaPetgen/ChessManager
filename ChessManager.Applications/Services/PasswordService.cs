@@ -15,7 +15,7 @@ public class PasswordService : IPasswordService
 
     public bool VerifyPassword(string hashedPassword, string inputPassword)
     {
-        return Argon2.Verify(inputPassword, hashedPassword);
+        return Argon2.Verify(hashedPassword, inputPassword);
     }
 
     public string GenerateRandomPassword()

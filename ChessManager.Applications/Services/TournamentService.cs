@@ -19,17 +19,20 @@ public class TournamentService : ITournamentService
         _mailService = mailService;
         _memberRepository = memberRepository;
     }
-    
+
     public async Task<Tournament?> GetByIdAsync(int id)
     {
-        Tournament? tournament =  await _tournamentRepository.GetByIdAsync(id);
-        
+        Tournament? tournament = await _tournamentRepository.GetByIdAsync(id);
+
+
+        if (tournament is null)
+        {
+            return null;
+        }
+
+        tournament.Members = await _tournamentRepository.GetMembers(id);
+
         return tournament;
-    }
-    
-    public async Task<IEnumerable<Member>> GetMembers(int id)
-    {
-        return await _tournamentRepository.GetMembers(id);
     }
 
     public Task<IEnumerable<Tournament>> GetAllAsync()
@@ -48,7 +51,7 @@ public class TournamentService : ITournamentService
                (tournament.WomenOnly == false || member.Gender == Gender.F);
     }
     
-    private async Task SendMailToPlayers(Tournament tournament)
+    private async Task SendMailToPlayersForNewTournament(Tournament tournament)
     {
         foreach (Member member in await _memberRepository.GetAllAsync())
         {
@@ -59,6 +62,17 @@ public class TournamentService : ITournamentService
         }
     }
 
+    private async Task SendMailToPlayersForDeletedTournament(Tournament tournament)
+    {
+        foreach (Member member in await _memberRepository.GetAllAsync())
+        {
+            if(IsAllowedToRegister(member, tournament))
+            {
+                _mailService.SendMail(member.Email, member.Pseudo, MailTemplate.GetSubjectForNewTournament(tournament), MailTemplate.GetBodyForNewTournament(tournament, member));
+            }
+        }
+    }
+    
     public async Task<Tournament?> CreateAsync(Tournament entity)
     {
 
@@ -68,11 +82,6 @@ public class TournamentService : ITournamentService
         
         entity.CreatedAt = DateTime.Now;
         entity.UpdatedAt = DateTime.Now;
-
-        Console.WriteLine($"{entity.RegistrationEndDate}");
-
-        Console.WriteLine($"{DateTime.Now.AddDays(entity.MinPlayerCount)}");
-        
         
         if (entity.RegistrationEndDate < DateTime.Now.AddDays(entity.MinPlayerCount))
         {
@@ -83,7 +92,7 @@ public class TournamentService : ITournamentService
 
         if (tournament is not null)
         {
-            await SendMailToPlayers(tournament);
+            await SendMailToPlayersForNewTournament(tournament);
         }
         
         return tournament;
@@ -95,11 +104,13 @@ public class TournamentService : ITournamentService
         
         if (tournament is not { Status: Status.PENDING })
         {
-            Console.WriteLine($"Sacha dit : {tournament?.Status}");
             throw new UnableToDeleteTournamentException();
         }
-        
-        // TODO: Prévenir les joueurs inscrits que le tournoi a été annulé
+
+        foreach (Member member in await _tournamentRepository.GetMembers(id))
+        {
+            await SendMailToPlayersForDeletedTournament(tournament);
+        }
         
         return await _tournamentRepository.DeleteAsync(id);
     }

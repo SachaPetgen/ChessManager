@@ -31,6 +31,7 @@ public class Tournament : BaseEntity
     public bool WomenOnly { get; set; }
     
     public DateTime RegistrationEndDate { get; set; }
-    
-    
+
+    public IEnumerable<Member>? Members { get; set; }
+
 }

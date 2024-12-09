@@ -1,6 +1,5 @@
 using ChessManager.Infrastructure.Mail.Config;
 using MailKit.Net.Smtp;
-using Microsoft.Extensions.Configuration;
 using MimeKit;
 
 namespace ChessManager.Infrastructure.Mail;

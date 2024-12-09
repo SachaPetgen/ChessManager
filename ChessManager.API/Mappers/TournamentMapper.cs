@@ -32,7 +32,8 @@ public static class TournamentMapper
             Status = tournament.Status,
             CurrentRound = tournament.CurrentRound,
             WomenOnly = tournament.WomenOnly,
-            RegistrationEndDate = tournament.RegistrationEndDate
+            RegistrationEndDate = tournament.RegistrationEndDate,
+            Members = tournament.Members?.Select(m => m.ToMemberViewListDto()) ?? []
         };
     }
 

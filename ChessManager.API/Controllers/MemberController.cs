@@ -4,6 +4,7 @@ using ChessManager.Domain.Models;
 using ChessManager.DTO.Member;
 using ChessManager.Infrastructure.Mail;
 using ChessManager.Mappers;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 // ReSharper disable ConvertIfStatementToReturnStatement
@@ -76,6 +77,7 @@ public class MemberController : ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [Authorize]
     public async Task<ActionResult<MemberCreateDTO>> CreateAsync([FromBody] MemberCreateDTO? memberCreateDTO)
     {
         if (memberCreateDTO is null || !this.ModelState.IsValid)
@@ -94,6 +96,33 @@ public class MemberController : ControllerBase
             }
             
             return CreatedAtAction(nameof(GetByIdAsync), new { id = member.Id }, member.ToMemberViewListDto());
+        }
+        catch (DbErrorException e)
+        {
+            return StatusCode(500, e.Message);
+        }
+        catch (Exception e)
+        {
+            return Problem(e.Message);
+        }
+    }
+    
+    [HttpPost("login")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [AllowAnonymous]
+    public async Task<ActionResult<string>> Login([FromBody] MemberLoginDTO? memberLoginDTO)
+    {
+        if (memberLoginDTO is null || !this.ModelState.IsValid)
+        {
+            return BadRequest(new { message = "Invalid data" });
+        }
+        
+        try
+        {
+            return await _memberService.Login(memberLoginDTO.Identifier, memberLoginDTO.Password);
+            
         }
         catch (DbErrorException e)
         {
