@@ -33,7 +33,8 @@ public static class TournamentMapper
             CurrentRound = tournament.CurrentRound,
             WomenOnly = tournament.WomenOnly,
             RegistrationEndDate = tournament.RegistrationEndDate,
-            Members = tournament.Members?.Select(m => m.ToMemberViewListDto()) ?? []
+            Members = tournament.Members?.Select(m => m.ToMemberViewListDto()) ?? [],
+            Categories = tournament.Categories?.Select(c => c.ToCategoryViewListDTO()) ?? []
         };
     }
 
@@ -48,7 +49,8 @@ public static class TournamentMapper
             MaxEloAllowed = tournamentCreateDto.MaxEloAllowed,
             MinEloAllowed = tournamentCreateDto.MinEloAllowed,
             WomenOnly = tournamentCreateDto.WomenOnly,
-            RegistrationEndDate = tournamentCreateDto.RegistrationEndDate
+            RegistrationEndDate = tournamentCreateDto.RegistrationEndDate,
+            CategoriesId = tournamentCreateDto.CategoriesId
         };
     }
 }

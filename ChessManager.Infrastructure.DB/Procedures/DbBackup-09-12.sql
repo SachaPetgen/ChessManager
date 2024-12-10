@@ -1,3 +1,16 @@
+create table Category
+(
+    Id        int identity
+        constraint Category_PK
+            primary key,
+    Name      nvarchar(50) not null,
+    AgeMax    int          not null,
+    AgeMin    int          not null,
+    CreatedAt datetime     not null,
+    UpdatedAt datetime     not null
+)
+go
+
 create table Member
 (
     Id        int identity
@@ -53,6 +66,15 @@ create table Tournament
 )
 go
 
+create table Tournament_Category
+(
+    Category_id   int not null,
+    Tournament_id int not null,
+    constraint Tournament_Category_PK
+        primary key (Category_id, Tournament_id)
+)
+go
+
 create table Tournament_Member
 (
     Member_id     int not null,
@@ -62,24 +84,38 @@ create table Tournament_Member
 )
 go
 
-CREATE PROCEDURE CheckPlayerTournamentMembership
-    @MemberId INT,
-    @TournamentId INT,
-    @IsRegistered BIT OUTPUT
+CREATE PROCEDURE AddCategoryToTournament
+    @CategoryId INT,
+    @TournamentId INT
+
 AS
 BEGIN
-    IF EXISTS (
-        SELECT 1
-        FROM Tournament_Member
-        WHERE Member_id = @MemberId AND Tournament_id = @TournamentId
-    )
-        BEGIN
-            SET @IsRegistered = 1;
-        END
-    ELSE
-        BEGIN
-            SET @IsRegistered = 0;
-        END
+    INSERT INTO Tournament_Category (Category_id, Tournament_id) VALUES (@CategoryId, @TournamentId);
+END;
+go
+
+CREATE PROCEDURE ChangePasswordMember
+    @MemberId INT,
+    @NewPassword NVARCHAR(255)
+
+AS
+BEGIN
+    UPDATE Member SET Password = @NewPassword WHERE Id = @MemberId
+end
+go
+
+CREATE PROCEDURE CreateCategory
+    @Name NVARCHAR(255),
+    @AgeMax INT,
+    @AgeMin INT,
+    @CreatedAt INT,
+    @UpdatedAt INT
+
+AS
+
+BEGIN
+    INSERT INTO Category (Name, AgeMax, AgeMin, CreatedAt, UpdatedAt)
+    VALUES (@Name, @AgeMax, @AgeMin, @CreatedAt, @UpdatedAt);
 END;
 go
 
@@ -133,6 +169,13 @@ BEGIN
 END;
 go
 
+CREATE PROCEDURE GetAllCategory
+AS
+BEGIN
+    SELECT * FROM Category;
+END;
+go
+
 -- Get all members
 CREATE PROCEDURE GetAllMembers
 AS
@@ -149,12 +192,28 @@ BEGIN
 END;
 go
 
+CREATE PROCEDURE GetCategoryById
+@CategoryId INT
+AS
+BEGIN
+    SELECT * FROM Category WHERE Id = @CategoryId;
+END;
+go
+
 -- Get the last 10 modified tournaments
 CREATE PROCEDURE GetLastModifiedTournaments
 @number INT
 AS
 BEGIN
     SELECT TOP (@number) * FROM Tournament ORDER BY UpdatedAt DESC;
+END;
+go
+
+CREATE PROCEDURE GetMemberByEmail
+@Email NVARCHAR(255)
+AS
+BEGIN
+    SELECT * FROM Member WHERE Email = @Email;
 END;
 go
 
@@ -167,27 +226,12 @@ BEGIN
 END;
 go
 
--- Get a member by pseudo
-
 CREATE PROCEDURE GetMemberByPseudo
-    @Pseudo NVARCHAR(255)
+@Pseudo NVARCHAR(255)
 AS
 BEGIN
     SELECT * FROM Member WHERE Pseudo = @Pseudo;
 END;
-    
-go
-
--- Get a member by email
-
-
-CREATE PROCEDURE GetMemberByEmail
-@Email NVARCHAR(255)
-AS
-BEGIN
-    SELECT * FROM Member WHERE Email = @Email;
-END;
-
 go
 
 -- Get a tournament by ID
@@ -199,6 +243,19 @@ BEGIN
 END;
 go
 
+CREATE PROCEDURE GetTournamentCategories
+
+@TournamentId INT
+AS
+BEGIN
+
+    SELECT * FROM Tournament_Category tc
+                      JOIN Category c ON tc.Category_id = c.Id
+    WHERE tc.Tournament_id = @TournamentId;
+
+end
+go
+
 CREATE PROCEDURE GetTournamentMembers
 @TournamentId INT
 AS
@@ -207,4 +264,45 @@ BEGIN
                       JOIN Member m ON tm.Member_id = m.Id
     WHERE tm.Tournament_id = @TournamentId;
 end
+go
+
+CREATE PROCEDURE GetTournamentMembersCount
+
+@TournamentId INT
+AS
+BEGIN
+    SELECT COUNT(*) FROM Tournament_Member WHERE Tournament_id = @TournamentId;
+END;
+go
+
+CREATE PROCEDURE IsPlayerRegisteredTournament
+    @MemberId INT,
+    @TournamentId INT,
+    @IsRegistered BIT OUTPUT
+AS
+BEGIN
+    IF EXISTS (
+        SELECT 1
+        FROM Tournament_Member
+        WHERE Member_id = @MemberId AND Tournament_id = @TournamentId
+    )
+        BEGIN
+            SET @IsRegistered = 1;
+        END
+    ELSE
+        BEGIN
+            SET @IsRegistered = 0;
+        END
+END;
+go
+
+CREATE PROCEDURE RegisterMemberToTournament
+
+    @MemberId INT,
+    @TournamentId INT
+
+AS
+BEGIN
+    INSERT INTO Tournament_Member (Member_id, Tournament_id) VALUES (@MemberId, @TournamentId);
+END;
 go

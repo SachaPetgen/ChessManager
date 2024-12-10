@@ -4,15 +4,17 @@ namespace ChessManager.Applications.Interfaces.Services;
 
 public interface ITournamentService
 {
-    public Task<Tournament?> GetByIdAsync(int id);
+    Task<Tournament?> GetByIdAsync(int id);
 
-    public Task<IEnumerable<Tournament>> GetAllAsync();
+    Task<IEnumerable<Tournament>> GetAllAsync();
     
-    public Task<IEnumerable<Tournament>> GetLastModified(int number);
+    Task<IEnumerable<Tournament>> GetLastModified(int number);
 
-    public Task<Tournament?> CreateAsync(Tournament entity);
+    Task<Tournament?> CreateAsync(Tournament entity);
     
-    public Task<bool> DeleteAsync(int id);
+    Task<bool> DeleteAsync(int id);
+    
+    Task<bool> RegisterMember(int memberId, int tournamentId);
     
     
 }

@@ -1,6 +1,8 @@
+using System.Security.Claims;
 using ChessManager.Applications.Interfaces.Services;
 using ChessManager.Domain.Exceptions;
 using ChessManager.Domain.Models;
+using ChessManager.DTO.Member;
 using ChessManager.DTO.Tournament;
 using ChessManager.Mappers;
 using Microsoft.AspNetCore.Authorization;
@@ -136,6 +138,33 @@ public class TournamentController : ControllerBase
                 return NotFound();
             }
             return NoContent();
+        }
+        catch (DbErrorException e)
+        {
+            return StatusCode(500, e.Message);
+        }
+        catch (Exception e)
+        {
+            return Problem(e.Message);
+        }
+    }
+    
+    [HttpPost("register-member")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [Authorize]
+    public async Task<ActionResult> RegisterMember([FromBody] RegisterMemberTournamentDTO registerMemberDTO)
+    {
+        try
+        {
+            int memberId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value!);
+            bool isRegistered = await _tournamentService.RegisterMember(memberId, registerMemberDTO.TournamentId);
+            if (!isRegistered)
+            {
+                return BadRequest();
+            }
+            return Ok();
         }
         catch (DbErrorException e)
         {

@@ -30,6 +30,9 @@ public class TournamentCreateDTO
     [Required]
     public DateTime RegistrationEndDate { get; set; }
     
+    [Required]
+    public IEnumerable<int> CategoriesId { get; set; }
+    
     
     
 }

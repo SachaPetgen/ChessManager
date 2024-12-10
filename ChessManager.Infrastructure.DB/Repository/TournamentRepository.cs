@@ -69,4 +69,49 @@ public class TournamentRepository : ITournamentRepository
         
         return affectedRows > 0;
     }
+    
+    public async Task<bool> CheckIfMemberIsRegistered(int memberId, int tournamentId)
+    {
+        return await _sqlConnection.QuerySingleOrDefaultAsync<bool>(
+            "IsPlayerRegisteredTournament",
+            new { MemberId = memberId, TournamentId = tournamentId },
+            commandType: System.Data.CommandType.StoredProcedure
+        );
+    }
+    
+    public async Task<IEnumerable<Category>> GetCategories(int id)
+    {
+        return await _sqlConnection.QueryAsync<Category>(
+            "GetTournamentCategories",
+            new { TournamentId = id },
+            commandType: System.Data.CommandType.StoredProcedure
+        );
+    }
+    
+    public async Task<int> GetNumberOfRegisteredMembers(int id)
+    {
+        return await _sqlConnection.QuerySingleOrDefaultAsync<int>(
+            "GetTournamentMembersCount",
+            new { TournamentId = id },
+            commandType: System.Data.CommandType.StoredProcedure
+        );
+    }
+    
+    public async Task<bool> RegisterMember(int memberId, int tournamentId)
+    {
+        return await _sqlConnection.ExecuteAsync(
+            "RegisterMemberToTournament",
+            new { MemberId = memberId, TournamentId = tournamentId },
+            commandType: System.Data.CommandType.StoredProcedure
+        ) > 0;
+    }
+    
+    public async Task<bool> AddCategory(int tournamentId, int categoryId)
+    {
+        return await _sqlConnection.ExecuteAsync(
+            "AddCategoryToTournament",
+            new { TournamentId = tournamentId, CategoryId = categoryId },
+            commandType: System.Data.CommandType.StoredProcedure
+        ) > 0;
+    }
 }

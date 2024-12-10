@@ -61,4 +61,17 @@ public class MemberRepository : IMemberRepository
         );
     }
 
+    public async Task<bool> ChangePassword(int id, string newPassword)
+    {
+        return await _sqlConnection.ExecuteAsync(
+            "ChangePasswordMember",
+            new
+            {
+                MemberId = id,
+                NewPassword = newPassword
+            },
+            commandType: System.Data.CommandType.StoredProcedure
+        ) > 0;
+    }
+
 }

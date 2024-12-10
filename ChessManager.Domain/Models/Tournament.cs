@@ -33,5 +33,8 @@ public class Tournament : BaseEntity
     public DateTime RegistrationEndDate { get; set; }
 
     public IEnumerable<Member>? Members { get; set; }
+    
+    public IEnumerable<int>? CategoriesId { get; set; }
+    public IEnumerable<Category>? Categories { get; set; }
 
 }

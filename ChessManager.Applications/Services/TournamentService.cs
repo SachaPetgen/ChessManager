@@ -12,12 +12,14 @@ public class TournamentService : ITournamentService
     private readonly ITournamentRepository _tournamentRepository;
     private readonly IMemberRepository _memberRepository;
     private readonly IMailService _mailService;
+    private readonly ICategoryRepository _categoryRepository;
     
-    public TournamentService(ITournamentRepository tournamentRepository, IMailService mailService, IMemberRepository memberRepository)
+    public TournamentService(ITournamentRepository tournamentRepository, IMailService mailService, IMemberRepository memberRepository, ICategoryRepository categoryRepository)
     {
         _tournamentRepository = tournamentRepository;
         _mailService = mailService;
         _memberRepository = memberRepository;
+        _categoryRepository = categoryRepository;
     }
 
     public async Task<Tournament?> GetByIdAsync(int id)
@@ -31,6 +33,7 @@ public class TournamentService : ITournamentService
         }
 
         tournament.Members = await _tournamentRepository.GetMembers(id);
+        tournament.Categories = await _tournamentRepository.GetCategories(id);
 
         return tournament;
     }
@@ -45,17 +48,25 @@ public class TournamentService : ITournamentService
         return _tournamentRepository.GetLastModified(number);
     }
     
-    private static bool IsAllowedToRegister(Member member, Tournament tournament)
+    private async Task<bool> IsAllowedToRegister(Member member, Tournament tournament)
     {
-        return member.Elo >= tournament.MinEloAllowed && member.Elo <= tournament.MaxEloAllowed &&
-               (tournament.WomenOnly == false || member.Gender == Gender.F);
+        int memberAge = (tournament.RegistrationEndDate - member.BirthDate).Days / 365;
+
+        return tournament.Status != Status.PENDING
+               && tournament.RegistrationEndDate >= DateTime.Now
+               && !await _tournamentRepository.CheckIfMemberIsRegistered(member.Id, tournament.Id)
+               && tournament.MaxPlayerCount > await _tournamentRepository.GetNumberOfRegisteredMembers(tournament.Id)
+               && (await _tournamentRepository.GetCategories(tournament.Id)).Select(c => memberAge < c.AgeMax && memberAge >= c.AgeMin).Any()
+               && (member.Elo > tournament.MinEloAllowed || member.Elo < tournament.MaxEloAllowed)
+               && (!tournament.WomenOnly || member.Gender != Gender.M);
+
     }
     
     private async Task SendMailToPlayersForNewTournament(Tournament tournament)
     {
         foreach (Member member in await _memberRepository.GetAllAsync())
         {
-            if(IsAllowedToRegister(member, tournament))
+            if(await IsAllowedToRegister(member, tournament))
             {
                 _mailService.SendMail(member.Email, member.Pseudo, MailTemplate.GetSubjectForNewTournament(tournament), MailTemplate.GetBodyForNewTournament(tournament, member));
             }
@@ -64,24 +75,25 @@ public class TournamentService : ITournamentService
 
     private async Task SendMailToPlayersForDeletedTournament(Tournament tournament)
     {
-        foreach (Member member in await _memberRepository.GetAllAsync())
+        foreach (Member member in await _tournamentRepository.GetMembers(tournament.Id))
         {
-            if(IsAllowedToRegister(member, tournament))
-            {
-                _mailService.SendMail(member.Email, member.Pseudo, MailTemplate.GetSubjectForNewTournament(tournament), MailTemplate.GetBodyForNewTournament(tournament, member));
-            }
+            _mailService.SendMail(member.Email, member.Pseudo, MailTemplate.GetSubjectForNewTournament(tournament), MailTemplate.GetBodyForNewTournament(tournament, member));
         }
     }
     
     public async Task<Tournament?> CreateAsync(Tournament entity)
     {
-
         entity.CurrentRound = 0;
         
         entity.Status = Status.PENDING;
         
         entity.CreatedAt = DateTime.Now;
         entity.UpdatedAt = DateTime.Now;
+
+        foreach(int categoryId in entity!.CategoriesId)
+        {
+            await _tournamentRepository.AddCategory(entity.Id, categoryId);
+        }
         
         if (entity.RegistrationEndDate < DateTime.Now.AddDays(entity.MinPlayerCount))
         {
@@ -113,5 +125,23 @@ public class TournamentService : ITournamentService
         }
         
         return await _tournamentRepository.DeleteAsync(id);
+    }
+
+    public async Task<bool> RegisterMember(int memberId, int tournamentId)
+    {
+        Member? member = await _memberRepository.GetByIdAsync(memberId);
+        Tournament? tournament = await GetByIdAsync(tournamentId);
+
+        if (member is null || tournament is null)
+        {
+            throw new InvalidIdentifierException();
+        }
+
+        if (!await IsAllowedToRegister(member, tournament))
+        {
+            throw new UnableToRegisterMemberException();
+        }
+
+        return await _tournamentRepository.RegisterMember(memberId, tournamentId);
     }
 }

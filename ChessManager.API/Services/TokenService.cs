@@ -19,31 +19,33 @@ public class TokenService : ITokenService
         
     public string GenerateToken(Member member)
     {
-        // création d'un objet de sécurité avec les informations à stocker dans le token (pas d'informations sensibles)
         List<Claim> claims = new List<Claim>()
         {
             new Claim(ClaimTypes.NameIdentifier, member.Id.ToString()),
-            new Claim("Pseudo", member.Pseudo),
+            new Claim("Username", member.Pseudo),
             new Claim("Elo", member.Elo.ToString()!),
             new Claim(ClaimTypes.Email, member.Email),
             new Claim(ClaimTypes.Role, member.Role.ToString()),
+            new Claim(JwtRegisteredClaimNames.Exp, DateTime.UtcNow.AddMinutes(15).ToString())  // Optional but adds clarity
         };
-        
-        // clé de cryptage
+    
+        // Key for signing the token
         SymmetricSecurityKey key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]!));
-        // nécessaire pour ajouter une signature au token(connais la clé et l'algo de cryptage)
+
+        // Signing credentials with the encryption key and algorithm
         SigningCredentials creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha512);
-        
-        // Génération du token
+
+        // Generate the token
         JwtSecurityToken token = new JwtSecurityToken(
-            _configuration["Jwt:Issuer"], // server qui génère l'api
-            _configuration["Jwt:Audience"], // qui l'utilise
+            _configuration["Jwt:Issuer"], // Issuer of the token (usually your API server)
+            _configuration["Jwt:Audience"], // Audience that uses the token (client side)
             claims,
-            expires: DateTime.Now.AddDays(60), // A modifier pour faire un token de 15 minutes + un refreshtoken
+            expires: DateTime.UtcNow.AddMinutes(15), // Token expiration (short-lived access token)
             signingCredentials: creds
         );
-        
-        // export du token sous forme de string 
+
+        // Return the token as a string
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
+
 }

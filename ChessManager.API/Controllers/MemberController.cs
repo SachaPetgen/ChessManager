@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using ChessManager.Applications.Interfaces.Services;
 using ChessManager.Domain.Exceptions;
 using ChessManager.Domain.Models;
@@ -15,19 +16,12 @@ namespace ChessManager.Controllers;
 [ApiController]
 public class MemberController : ControllerBase
 {
-
-
+    
     private readonly IMemberService _memberService;
-
-    private readonly IMailService _mailService;
-
-    private readonly IPasswordService _passwordService;
-
-    public MemberController(IMemberService memberService, IMailService mailService, IPasswordService passwordService)
+    
+    public MemberController(IMemberService memberService)
     {
         _memberService = memberService;
-        _mailService = mailService;
-        _passwordService = passwordService;
     }
 
     [HttpGet]
@@ -87,9 +81,7 @@ public class MemberController : ControllerBase
         
         try
         {
-            Member? memberToAdd = memberCreateDTO.ToMember();
-            
-            Member? member = await _memberService.CreateAsync(memberToAdd);
+            Member? member = await _memberService.CreateAsync(memberCreateDTO.ToMember());
             if (member is null)
             {
                 return StatusCode(500, "Failed to create member.");
@@ -133,4 +125,37 @@ public class MemberController : ControllerBase
             return Problem(e.Message);
         }
     }
+    
+    [HttpPost("change-password")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [Authorize]
+    public async Task<ActionResult> ChangePassword([FromBody] MemberChangePasswordDTO? memberChangePasswordDTO)
+    {
+        
+        if (memberChangePasswordDTO is null || !this.ModelState.IsValid)
+        {
+            return BadRequest(new { message = "Invalid data" });
+        }
+        
+        try
+        {
+            ClaimsPrincipal principal = this.User;
+            int memberId = int.Parse(principal.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "-1");
+            
+            await _memberService.ChangePassword(memberId, memberChangePasswordDTO.Password, memberChangePasswordDTO.ConfirmPassword, memberChangePasswordDTO.OldPassword);
+            return Ok();
+        }
+        catch (DbErrorException e)
+        {
+            return StatusCode(500, e.Message);
+        }
+        catch (Exception e)
+        {
+            return Problem(e.Message);
+        }
+    }
+
+    
 }

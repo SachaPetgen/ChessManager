@@ -29,4 +29,18 @@ public static class MailTemplate
         return $"Hello {member.Pseudo},\n\nA new tournament has been created: {tournament.Name}.\n\nYou can now register to this tournament.\n\nGood luck!";
     }
     
+    public static string GetSubjectForResetPassword(Member member)
+    {
+        return "Reset your password";
+    }
+    
+    public static string GetBodyForResetPassword(Member member, string linkToReset)
+    {
+        return $"Hello {member.Pseudo},\n\n" +
+               $"You have requested to reset your password. Here is the link to reset it:\n" +
+               $"- {linkToReset}\n\n" +
+               $"If you did not request this, please ignore this email.";
+        
+    }
+    
 }

@@ -1,4 +1,5 @@
 using ChessManager.Domain.Models;
+using ChessManager.DTO.Category;
 using ChessManager.DTO.Member;
 
 namespace ChessManager.DTO.Tournament;
@@ -28,4 +29,7 @@ public class TournamentViewDTO
     public DateTime RegistrationEndDate { get; set; }
     
     public IEnumerable<MemberViewListDTO> Members { get; set; }
+    
+    public IEnumerable<CategoryViewListDTO> Categories { get; set; }
+
 }
