@@ -45,7 +45,6 @@ public class CategoryController : ControllerBase
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult<CategoryViewListDTO>> CreateAsync([FromBody] CategoryViewListDTO? categoryViewListDto)
     {
-
         if (categoryViewListDto is null || !this.ModelState.IsValid)
         {
             return BadRequest(new

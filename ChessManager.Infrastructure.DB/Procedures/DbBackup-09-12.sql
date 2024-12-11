@@ -66,6 +66,27 @@ create table Tournament
 )
 go
 
+create table Match
+(
+    Id              int identity
+        constraint Match_PK
+            primary key,
+    White_Member_Id int      not null
+        constraint Match_White_Member_FK
+            references Member,
+    Tournament_id   int      not null
+        constraint Match_Tournament_FK
+            references Tournament,
+    Black_Member_Id int      not null
+        constraint Match_Black_Member_FK
+            references Member,
+    Result          int      not null,
+    Round           int      not null,
+    CreatedAt       datetime not null,
+    UpdatedAt       datetime not null
+)
+go
+
 create table Tournament_Category
 (
     Category_id   int not null,
@@ -108,15 +129,30 @@ CREATE PROCEDURE CreateCategory
     @Name NVARCHAR(255),
     @AgeMax INT,
     @AgeMin INT,
-    @CreatedAt INT,
-    @UpdatedAt INT
-
+    @CreatedAt DATETIME,
+    @UpdatedAt DATETIME
 AS
 
 BEGIN
     INSERT INTO Category (Name, AgeMax, AgeMin, CreatedAt, UpdatedAt)
+    OUTPUT inserted.*
     VALUES (@Name, @AgeMax, @AgeMin, @CreatedAt, @UpdatedAt);
 END;
+go
+
+CREATE PROCEDURE CreateMatch
+
+    @TournamentId INT,
+    @Round INT,
+    @WhiteMemberId INT,
+    @BlackMemberId INT,
+    @Status INT
+
+AS
+BEGIN
+    INSERT INTO Match (Tournament_id, Round, White_Member_Id, Black_Member_Id, Result, CreatedAt, UpdatedAt)
+    VALUES (@TournamentId, @Round, @WhiteMemberId, @BlackMemberId, @Status, GETDATE(), GETDATE())
+END
 go
 
 -- Create a new member
@@ -277,22 +313,19 @@ go
 
 CREATE PROCEDURE IsPlayerRegisteredTournament
     @MemberId INT,
-    @TournamentId INT,
-    @IsRegistered BIT OUTPUT
+    @TournamentId INT
 AS
 BEGIN
-    IF EXISTS (
-        SELECT 1
-        FROM Tournament_Member
-        WHERE Member_id = @MemberId AND Tournament_id = @TournamentId
-    )
-        BEGIN
-            SET @IsRegistered = 1;
-        END
-    ELSE
-        BEGIN
-            SET @IsRegistered = 0;
-        END
+    SELECT
+        CASE
+            WHEN EXISTS (
+                SELECT 1
+                FROM Tournament_Member
+                WHERE Member_id = @MemberId AND Tournament_id = @TournamentId
+            )
+                THEN CAST(1 AS BIT)
+            ELSE CAST(0 AS BIT)
+            END AS IsRegistered;
 END;
 go
 
@@ -305,4 +338,27 @@ AS
 BEGIN
     INSERT INTO Tournament_Member (Member_id, Tournament_id) VALUES (@MemberId, @TournamentId);
 END;
+go
+
+CREATE PROCEDURE StartTournament
+    @TournamentID INT,
+    @StatusID INT,
+    @CurrentRound INT
+AS
+BEGIN
+    UPDATE Tournament
+    SET Status = @StatusID, CurrentRound = @CurrentRound, UpdatedAt = GETDATE()
+    WHERE Tournament.Id = @TournamentID
+end
+go
+
+CREATE PROCEDURE UnregisterMemberFromTournament
+
+    @MemberID INT,
+    @TournamentID INT
+AS
+BEGIN
+    DELETE FROM Tournament_Member
+    WHERE Member_id = @MemberID AND Tournament_id = @TournamentID
+END
 go

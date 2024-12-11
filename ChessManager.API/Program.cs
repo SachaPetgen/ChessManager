@@ -21,6 +21,7 @@ builder.Services.AddControllers(options =>
 {
     options.SuppressAsyncSuffixInActionNames = false;
 });
+
 builder.Services.AddHttpContextAccessor();
 
 

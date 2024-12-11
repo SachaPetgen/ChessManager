@@ -25,5 +25,10 @@ public class CategoryService : ICategoryService
     {
         return _categoryRepository.GetByIdAsync(id);
     }
-
+    
+    public Task<IEnumerable<Category>> GetAllAsync()
+    {
+        return _categoryRepository.GetAllAsync();
+    }
+    
 }

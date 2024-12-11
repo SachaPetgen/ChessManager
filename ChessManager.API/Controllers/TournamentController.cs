@@ -2,6 +2,7 @@ using System.Security.Claims;
 using ChessManager.Applications.Interfaces.Services;
 using ChessManager.Domain.Exceptions;
 using ChessManager.Domain.Models;
+using ChessManager.DTO.Category;
 using ChessManager.DTO.Member;
 using ChessManager.DTO.Tournament;
 using ChessManager.Mappers;
@@ -16,15 +17,15 @@ namespace ChessManager.Controllers;
 
 public class TournamentController : ControllerBase
 {
-    
-    
+
+
     private readonly ITournamentService _tournamentService;
-    
+
     public TournamentController(ITournamentService tournamentService)
     {
         _tournamentService = tournamentService;
     }
-    
+
     [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -44,8 +45,8 @@ public class TournamentController : ControllerBase
             return Problem(e.Message);
         }
     }
-    
-    
+
+
     [HttpGet("{id:int}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -59,7 +60,7 @@ public class TournamentController : ControllerBase
             {
                 return NotFound();
             }
-            
+
             return Ok(tournament.ToTournamentViewDto());
         }
         catch (DbErrorException e)
@@ -71,8 +72,8 @@ public class TournamentController : ControllerBase
             return Problem(e.Message);
         }
     }
-    
-    
+
+
     [HttpGet("last-modified/{number:int}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -92,26 +93,32 @@ public class TournamentController : ControllerBase
             return Problem(e.Message);
         }
     }
-    
+
     [HttpPost]
     [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    [Authorize(Roles = "Admin")]
+    //[Authorize(Roles = "Admin")]
     public async Task<ActionResult<TournamentViewDTO>> CreateAsync([FromBody] TournamentCreateDTO createTournamentDTO)
     {
+        
         try
         {
             Tournament tournament = createTournamentDTO.ToTournament();
-            
+
             Tournament? createdTournament = await _tournamentService.CreateAsync(tournament);
 
             if (createdTournament is null)
             {
                 return BadRequest();
             }
-            
-            return CreatedAtAction(nameof(GetByIdAsync), new { id = createdTournament.Id }, createdTournament.ToTournamentViewDto());
+
+            return CreatedAtAction(nameof(GetByIdAsync),
+                new
+                {
+                    id = createdTournament.Id
+                },
+                createdTournament.ToTournamentViewDto());
         }
         catch (DbErrorException e)
         {
@@ -122,7 +129,7 @@ public class TournamentController : ControllerBase
             return Problem(e.Message);
         }
     }
-    
+
     [HttpDelete("{id:int}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -148,7 +155,7 @@ public class TournamentController : ControllerBase
             return Problem(e.Message);
         }
     }
-    
+
     [HttpPost("register-member")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -164,7 +171,7 @@ public class TournamentController : ControllerBase
             {
                 return BadRequest();
             }
-            return Ok();
+            return Ok(isRegistered);
         }
         catch (DbErrorException e)
         {
@@ -174,6 +181,55 @@ public class TournamentController : ControllerBase
         {
             return Problem(e.Message);
         }
+    }
+    
+    [HttpPost("unregister-member")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [Authorize]
+    public async Task<ActionResult> UnregisterMember([FromBody] RegisterMemberTournamentDTO registerMemberDTO)
+    {
+        try
+        {
+            int memberId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value!);
+            bool isUnregistered = await _tournamentService.UnregisterMember(memberId, registerMemberDTO.TournamentId);
+            if (!isUnregistered)
+            {
+                return BadRequest();
+            }
+            return Ok(isUnregistered);
+        }
+        catch (DbErrorException e)
+        {
+            return StatusCode(500, e.Message);
+        }
+        catch (Exception e)
+        {
+            return Problem(e.Message);
+        }
+    }
+
+    [HttpPost("add-category")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<ActionResult<bool>> AddCategory([FromBody] AddCategoryToTournamentDTO addCategoryDTO)
+    {
+        try
+        {
+            bool result = await _tournamentService.AddCategory(addCategoryDTO.TournamentId, addCategoryDTO.CategoryId);
+            return Ok(result);
+        }
+        catch (DbErrorException e)
+        {
+            return StatusCode(500, e.Message);
+        }
+        catch (Exception e)
+        {
+            return Problem(e.Message);
+        }
+
     }
     
 }

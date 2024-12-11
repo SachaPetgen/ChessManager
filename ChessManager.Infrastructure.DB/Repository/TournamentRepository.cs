@@ -106,6 +106,15 @@ public class TournamentRepository : ITournamentRepository
         ) > 0;
     }
     
+    public async Task<bool> UnregisterMember(int memberId, int tournamentId)
+    {
+        return await _sqlConnection.ExecuteAsync(
+            "UnregisterMemberFromTournament",
+            new { MemberId = memberId, TournamentId = tournamentId },
+            commandType: System.Data.CommandType.StoredProcedure
+        ) > 0;
+    }
+    
     public async Task<bool> AddCategory(int tournamentId, int categoryId)
     {
         return await _sqlConnection.ExecuteAsync(
@@ -114,4 +123,35 @@ public class TournamentRepository : ITournamentRepository
             commandType: System.Data.CommandType.StoredProcedure
         ) > 0;
     }
+    
+    public async Task<Tournament?> UpdateTournamentStatus(int tournamentId, Status status)
+    {
+        return await _sqlConnection.QuerySingleOrDefaultAsync<Tournament>(
+            "UpdateTournamentStatus",
+            new { TournamentId = tournamentId, Status = status },
+            commandType: System.Data.CommandType.StoredProcedure
+        );
+    }
+    
+    public async Task<bool> RefreshUpdateTime(int tournamentId)
+    {
+        return await _sqlConnection.ExecuteAsync(
+            "RefreshUpdateTimeTournament",
+            new { TournamentId = tournamentId },
+            commandType: System.Data.CommandType.StoredProcedure
+        ) > 0;
+    }
+    
+    public async Task<bool> StartTournament(int tournamentId)
+    {
+        return await _sqlConnection.ExecuteAsync(
+            "StartTournament",
+            new { TournamentId = tournamentId, Status = 1 , CurrentRound = 1  },
+            commandType: System.Data.CommandType.StoredProcedure
+        ) > 0;
+    }
+    
+    
+    
+    
 }

@@ -52,11 +52,11 @@ public class TournamentService : ITournamentService
     {
         int memberAge = (tournament.RegistrationEndDate - member.BirthDate).Days / 365;
 
-        return tournament.Status != Status.PENDING
+        return tournament.Status == Status.PENDING
                && tournament.RegistrationEndDate >= DateTime.Now
                && !await _tournamentRepository.CheckIfMemberIsRegistered(member.Id, tournament.Id)
                && tournament.MaxPlayerCount > await _tournamentRepository.GetNumberOfRegisteredMembers(tournament.Id)
-               && (await _tournamentRepository.GetCategories(tournament.Id)).Select(c => memberAge < c.AgeMax && memberAge >= c.AgeMin).Any()
+               && (await _tournamentRepository.GetCategories(tournament.Id)).Select(c => memberAge <= c.AgeMax && memberAge >= c.AgeMin).Any()
                && (member.Elo > tournament.MinEloAllowed || member.Elo < tournament.MaxEloAllowed)
                && (!tournament.WomenOnly || member.Gender != Gender.M);
 
@@ -89,11 +89,6 @@ public class TournamentService : ITournamentService
         
         entity.CreatedAt = DateTime.Now;
         entity.UpdatedAt = DateTime.Now;
-
-        foreach(int categoryId in entity!.CategoriesId)
-        {
-            await _tournamentRepository.AddCategory(entity.Id, categoryId);
-        }
         
         if (entity.RegistrationEndDate < DateTime.Now.AddDays(entity.MinPlayerCount))
         {
@@ -143,5 +138,89 @@ public class TournamentService : ITournamentService
         }
 
         return await _tournamentRepository.RegisterMember(memberId, tournamentId);
+    }
+    
+    public async Task<bool> UnregisterMember(int memberId, int tournamentId)
+    {
+        Member? member = await _memberRepository.GetByIdAsync(memberId);
+        Tournament? tournament = await GetByIdAsync(tournamentId);
+
+        if (member is null || tournament is null)
+        {
+            throw new InvalidIdentifierException();
+        }
+        
+        if(tournament.Status != Status.PENDING && !await _tournamentRepository.CheckIfMemberIsRegistered(memberId, tournamentId))
+        {
+            throw new MemberNotRegisteredException();
+        }
+
+        return await _tournamentRepository.UnregisterMember(memberId, tournamentId);
+    }
+
+    public async Task<bool> AddCategory(int tournamentId, int categoryId)
+    {
+        Category? category = await _categoryRepository.GetByIdAsync(categoryId);
+        Tournament? tournament = await _tournamentRepository.GetByIdAsync(tournamentId);
+        
+        if (category is null || tournament is null)
+        {
+            throw new InvalidIdentifierException();
+        }
+
+        return await _tournamentRepository.AddCategory(tournamentId, categoryId);
+
+    }
+    
+    private async Task<bool> IsAbleToStart(Tournament tournament)
+    {
+
+        return tournament.Status == Status.PENDING
+               && tournament.RegistrationEndDate <= DateTime.Now
+               && await _tournamentRepository.GetNumberOfRegisteredMembers(tournament.Id) >= tournament.MinPlayerCount;
+    }
+
+    public async Task<bool> CreateMatchmaking(Tournament tournament)
+    {
+
+        IEnumerable<Member> members = await _tournamentRepository.GetMembers(tournament.Id);
+
+        int numberOfPlayers = members.Count();
+
+        int numberOfRounds = numberOfPlayers - 1;
+
+        int numberOfMatches = numberOfRounds * (numberOfPlayers / 2) * 2;
+        
+
+        for (int i = 0; i < numberOfRounds; i++)
+        {
+            // 1 2 3 4 5 6 7 8
+            // 1 8 2 7 3 6 4 5
+            // 1 7 8 6 2 5 3 4
+            // 1 6 7 5 8 4 2 3
+        }
+
+
+    }
+    
+    public async Task<bool> StartTournament(int tournamentId)
+    {
+        Tournament? tournament = await GetByIdAsync(tournamentId);
+
+        if (tournament is null)
+        {
+            throw new InvalidIdentifierException();
+        }
+
+        if (!await IsAbleToStart(tournament))
+        {
+            throw new TournamentUnableToStart();
+        }
+        
+        
+        
+
+        return await _tournamentRepository.StartTournament(tournament.Id);
+
     }
 }

@@ -50,7 +50,6 @@ public static class TournamentMapper
             MinEloAllowed = tournamentCreateDto.MinEloAllowed,
             WomenOnly = tournamentCreateDto.WomenOnly,
             RegistrationEndDate = tournamentCreateDto.RegistrationEndDate,
-            CategoriesId = tournamentCreateDto.CategoriesId
         };
     }
 }

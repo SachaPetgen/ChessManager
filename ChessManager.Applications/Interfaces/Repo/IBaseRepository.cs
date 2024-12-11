@@ -1,4 +1,3 @@
-
 using ChessManager.Domain.Base;
 
 namespace ChessManager.Applications.Interfaces.Repo;

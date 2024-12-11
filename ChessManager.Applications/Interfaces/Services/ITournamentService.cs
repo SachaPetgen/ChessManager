@@ -16,5 +16,11 @@ public interface ITournamentService
     
     Task<bool> RegisterMember(int memberId, int tournamentId);
     
+    Task<bool> UnregisterMember(int memberId, int tournamentId);
+    
+    Task<bool> AddCategory(int tournamentId, int categoryId);
+    
+    Task<bool> StartTournament(int tournamentId);
+    
     
 }
