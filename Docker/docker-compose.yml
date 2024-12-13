@@ -1,0 +1,32 @@
+services: 
+    #sqlserver:
+        #container_name: CheckmateAPI-SQLServer
+        #build:
+        #    dockerfile: sqlserver-fulltext.Dockerfile
+       # ports:
+      #     - "1433:1433"
+      #  environment:
+     #       SA_PASSWORD: "Some4Complex#Password"
+    #        ACCEPT_EULA: "Y"
+   #     volumes:
+  #          - db-vol:/var/opt/mssql
+ #       networks:
+#            - db-network
+    smtpserver:
+        container_name: CheckmateAPI-SMTPServer
+        image: rnwood/smtp4dev
+        ports:
+            - "4343:143"
+            - "4225:25"
+            - "4280:80"
+volumes:
+    # sur linux il crée un dossier dans /var/lib/docker/volumes/db-vol
+    db-vol:
+
+networks:
+    db-network:
+        driver: bridge
+
+
+# docker-compose -p checkmate_api up -d
+# docker-compose -p checkmate_api down

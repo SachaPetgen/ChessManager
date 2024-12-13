@@ -47,11 +47,7 @@ create table Tournament
     MinPlayerCount      int           not null
         constraint MinPlayerLimit
             check ([MinPlayerCount] >= 2 AND [MinPlayerCount] <= 32),
-    MaxEloAllowed       int           not null
-        constraint MaxEloRange
-            check ([MaxEloAllowed] >= 0 AND [MaxEloAllowed] <= 3200)
-        constraint MinEloRange
-            check ([MaxEloAllowed] >= 0 AND [MaxEloAllowed] <= 3200),
+    MaxEloAllowed       int           not null,
     MinEloAllowed       int           not null,
     Status              int           not null,
     CurrentRound        int           not null,

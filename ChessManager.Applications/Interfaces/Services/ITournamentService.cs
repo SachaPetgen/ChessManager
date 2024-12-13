@@ -1,3 +1,4 @@
+using ChessManager.Applications.DTO;
 using ChessManager.Domain.Models;
 
 namespace ChessManager.Applications.Interfaces.Services;
@@ -22,5 +23,9 @@ public interface ITournamentService
     
     Task<bool> StartTournament(int tournamentId);
     
-    
+    Task<bool> StartNextRound(int tournamentId);
+
+    Task<List<ResultsDTO>> GetResults(int tournamentId);
+
+
 }

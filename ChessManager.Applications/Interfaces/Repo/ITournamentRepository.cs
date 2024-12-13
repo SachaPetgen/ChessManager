@@ -22,5 +22,10 @@ public interface ITournamentRepository : IBaseRepository<Tournament>
     Task<bool> UnregisterMember(int memberId, int tournamentId);
     
     Task<bool> AddCategory(int tournamentId, int categoryId);
+    
     Task<bool> StartTournament(int tournamentId);
+    
+    Task<bool> StartNextRound(int tournamentId);
+    
+    Task<IEnumerable<Match>> GetMatches(int id);
 }

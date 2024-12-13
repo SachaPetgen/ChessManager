@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using ChessManager.Applications.DTO;
 using ChessManager.Applications.Interfaces.Services;
 using ChessManager.Domain.Exceptions;
 using ChessManager.Domain.Models;
@@ -232,4 +233,66 @@ public class TournamentController : ControllerBase
 
     }
     
+    [HttpPost("start/{tournamentId:int}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    //[Authorize(Roles = "Admin")]
+    public async Task<ActionResult<bool>> Start([FromRoute] int tournamentId)
+    {
+        try
+        {
+            return await _tournamentService.StartTournament(tournamentId);
+        }
+        catch (DbErrorException e)
+        {
+            return StatusCode(500, e.Message);
+        }
+        catch (Exception e)
+        {
+            return Problem(e.Message);
+        }
+    }
+    
+    [HttpPost("next-round/{tournamentId:int}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    //[Authorize(Roles = "Admin")]
+    public async Task<ActionResult<bool>> StartNextRound([FromRoute] int tournamentId)
+    {
+        try
+        {
+            return await _tournamentService.StartNextRound(tournamentId);
+        }
+        catch (DbErrorException e)
+        {
+            return StatusCode(500, e.Message);
+        }
+        catch (Exception e)
+        {
+            return Problem(e.Message);
+        }
+    }
+    
+    [HttpPost("get-result/{tournamentId:int}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    //[Authorize(Roles = "Admin")]
+    public async Task<ActionResult<IEnumerable<ResultsDTO>>> GetResults([FromRoute] int tournamentId)
+    {
+        try
+        {
+            return await _tournamentService.GetResults(tournamentId);
+        }
+        catch (DbErrorException e)
+        {
+            return StatusCode(500, e.Message);
+        }
+        catch (Exception e)
+        {
+            return Problem(e.Message);
+        }
+    }
 }

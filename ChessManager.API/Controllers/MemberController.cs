@@ -71,7 +71,7 @@ public class MemberController : ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    [Authorize]
+    //[Authorize]
     public async Task<ActionResult<MemberCreateDTO>> CreateAsync([FromBody] MemberCreateDTO? memberCreateDTO)
     {
         if (memberCreateDTO is null || !this.ModelState.IsValid)

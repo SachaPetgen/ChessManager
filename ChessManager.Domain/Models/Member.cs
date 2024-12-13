@@ -3,7 +3,7 @@ using ChessManager.Domain.Base;
 namespace ChessManager.Domain.Models;
 
 public enum Gender{ M, F, X }
-public enum Role{ Admin, Member }
+public enum Role{ Member, Admin }
 
 public class Member : BaseEntity
 {

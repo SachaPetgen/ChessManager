@@ -1,3 +1,4 @@
+using ChessManager.Applications.DTO;
 using ChessManager.Applications.Interfaces.Repo;
 using ChessManager.Applications.Interfaces.Services;
 using ChessManager.Domain.Exceptions;
@@ -13,13 +14,16 @@ public class TournamentService : ITournamentService
     private readonly IMemberRepository _memberRepository;
     private readonly IMailService _mailService;
     private readonly ICategoryRepository _categoryRepository;
+    private readonly IMatchRepository _matchRepository;
     
-    public TournamentService(ITournamentRepository tournamentRepository, IMailService mailService, IMemberRepository memberRepository, ICategoryRepository categoryRepository)
+    public TournamentService(ITournamentRepository tournamentRepository, IMailService mailService,
+        IMemberRepository memberRepository, ICategoryRepository categoryRepository, IMatchRepository matchRepository)
     {
         _tournamentRepository = tournamentRepository;
         _mailService = mailService;
         _memberRepository = memberRepository;
         _categoryRepository = categoryRepository;
+        _matchRepository = matchRepository;
     }
 
     public async Task<Tournament?> GetByIdAsync(int id)
@@ -94,6 +98,8 @@ public class TournamentService : ITournamentService
         {
             throw new BadRegistrationEndDateException();
         }
+        
+        //check
         
         Tournament? tournament = await _tournamentRepository.CreateAsync(entity);
 
@@ -174,33 +180,60 @@ public class TournamentService : ITournamentService
     
     private async Task<bool> IsAbleToStart(Tournament tournament)
     {
-
         return tournament.Status == Status.PENDING
                && tournament.RegistrationEndDate <= DateTime.Now
                && await _tournamentRepository.GetNumberOfRegisteredMembers(tournament.Id) >= tournament.MinPlayerCount;
     }
 
-    public async Task<bool> CreateMatchmaking(Tournament tournament)
+    private async Task<bool> CreateMatchmaking(Tournament? tournament)
     {
+        
+        if (tournament is null)
+            return false;
+        
+        List<Member?> members = (await _tournamentRepository.GetMembers(tournament.Id)).ToList()!;
 
-        IEnumerable<Member> members = await _tournamentRepository.GetMembers(tournament.Id);
-
-        int numberOfPlayers = members.Count();
+        int numberOfPlayers = members.Count;
 
         int numberOfRounds = numberOfPlayers - 1;
-
-        int numberOfMatches = numberOfRounds * (numberOfPlayers / 2) * 2;
         
-
+        if (numberOfPlayers % 2 != 0)
+        {
+            members.Add(null);
+        }
+        
         for (int i = 0; i < numberOfRounds; i++)
         {
-            // 1 2 3 4 5 6 7 8
-            // 1 8 2 7 3 6 4 5
-            // 1 7 8 6 2 5 3 4
-            // 1 6 7 5 8 4 2 3
+            for (int j = 0; j < numberOfPlayers; j += 2)
+            {
+                Member? whitePlayer = members[j];
+                Member? blackPlayer = members[j + 1];
+
+                Match? match;
+
+                try
+                {
+                    if (whitePlayer is null || blackPlayer is null)
+                        match = await _matchRepository.CreateMatchAsync(Result.ODDGAME, tournament.Id, blackPlayer?.Id,
+                            whitePlayer?.Id);
+                    else
+                        match = await _matchRepository.CreateMatchAsync(Result.PENDING, tournament.Id, blackPlayer.Id,
+                            whitePlayer.Id);
+
+                    await _matchRepository.AddMatchToTournamentAsync(tournament.Id, match!.Id, i + 1);
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e.Message);
+                }
+            }   
+            
+            Member? last = members[^1];
+            members.RemoveAt(members.Count - 1);
+            members.Insert(1, last);
         }
-
-
+        
+        return true;
     }
     
     public async Task<bool> StartTournament(int tournamentId)
@@ -216,11 +249,95 @@ public class TournamentService : ITournamentService
         {
             throw new TournamentUnableToStart();
         }
-        
-        
-        
+
+        if(!await CreateMatchmaking(tournament))
+        {
+            throw new UnableToCreateMatchmaking();
+        }
 
         return await _tournamentRepository.StartTournament(tournament.Id);
+    }
+
+    public async Task<bool> StartNextRound(int tournamentId)
+    {
+        return await _tournamentRepository.StartNextRound(tournamentId);
+    }
+
+    public async Task<List<ResultsDTO>> GetResults(int tournamentId)
+    {
+        
+        Tournament tournament = await GetByIdAsync(tournamentId) ?? throw new InvalidIdentifierException();
+        
+        if(tournament.Status != Status.OVER)
+            throw new TournamentNotFinishedException();
+        
+        IEnumerable<Member> members = await _tournamentRepository.GetMembers(tournamentId);
+
+        IEnumerable<Match> matchs = await _tournamentRepository.GetMatches(tournamentId);
+        
+        List<ResultsDTO> results = [];
+
+        foreach (Member member in members)
+        {
+
+            double score = 0;
+            int win = 0;
+            int lose = 0;
+            int draw = 0;
+            int total = 0;
+            
+            foreach (Match match in matchs)
+            {
+
+                if (match.BlackPlayerId == member.Id || match.WhitePLayerId == member.Id)
+                {
+                    total++;
+
+                    switch (match.Result)
+                    {
+                        case Result.DRAW:
+                            draw++;
+                            score += 0.5;
+                            break;
+                        case Result.WHITEWINS:
+                            if (match.WhitePLayerId == member.Id)
+                            {
+                                win++;
+                                score += 1;
+                            }
+                            else
+                            {
+                                lose++;
+                            }
+                            break;
+                        case Result.BLACKWINS:
+                            if (match.BlackPlayerId == member.Id)
+                            {
+                                win++;
+                                score += 1;
+                            }
+                            else
+                            {
+                                lose++;
+                            }
+                            break;
+                    }
+                }
+
+            }
+            results.Add(new ResultsDTO()
+            {
+                Score = score,
+                VictoryNb = win,
+                LossNb = lose,
+                DrawNb = draw,
+                TotalNb = total,
+                MemberName = member.Pseudo
+            });
+            
+        }
+        
+        return results;
 
     }
 }

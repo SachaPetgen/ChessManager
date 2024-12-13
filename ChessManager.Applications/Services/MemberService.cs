@@ -5,7 +5,6 @@ using ChessManager.Domain.Exceptions;
 using ChessManager.Domain.Models;
 using ChessManager.Infrastructure.Mail;
 using Isopoh.Cryptography.Argon2;
-using Microsoft.AspNetCore.Http;
 
 namespace ChessManager.Applications.Services;
 
@@ -16,15 +15,13 @@ public class MemberService : IMemberService
     private readonly IPasswordService _passwordService;
     private readonly IMailService _mailService;
     private readonly ITokenService _tokenService;
-    private readonly IHttpContextAccessor _httpContextAccessor;
     
-    public MemberService(IMemberRepository memberRepository, IPasswordService passwordService, IMailService mailService, ITokenService tokenService, IHttpContextAccessor httpContextAccessor)
+    public MemberService(IMemberRepository memberRepository, IPasswordService passwordService, IMailService mailService, ITokenService tokenService)
     {
         _memberRepository = memberRepository;
         _passwordService = passwordService;
         _mailService = mailService;
         _tokenService = tokenService;
-        _httpContextAccessor = httpContextAccessor;
     }
     
     public Task<Member?> GetByIdAsync(int id)

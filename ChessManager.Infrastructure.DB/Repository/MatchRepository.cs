@@ -15,14 +15,37 @@ public class MatchRepository : IMatchRepository
         _sqlConnection = sqlConnection;
     }
 
-    public Task<Match?> CreateMatchAsync(Match entity, int tournamentId, int blackMemberId, int whitePlayerId)
+    public async Task<Match?> CreateMatchAsync(Result result, int tournamentId, int? blackMemberId, int? whitePlayerId)
     {
-        return _sqlConnection.QuerySingleOrDefaultAsync<Match>(
+        return await _sqlConnection.QuerySingleOrDefaultAsync<Match>(
             "CreateMatch",
-            new {entity.Result, },
+            new { TournamentId = tournamentId, WhiteMemberId = whitePlayerId, BlackMemberId = blackMemberId, Result = result },
             commandType: System.Data.CommandType.StoredProcedure
         );
     }
 
+    public async Task<bool> AddMatchToTournamentAsync(int tournamentId, int matchId, int round)
+    {
+        return await _sqlConnection.ExecuteAsync(
+            "AddMatchToTournament",
+            new { tournamentId, matchId , round},
+            commandType: System.Data.CommandType.StoredProcedure) > 0;
+    }
+    
+    public async Task<bool> UpdateResult( int matchId, Result result)
+    {
+        return await _sqlConnection.ExecuteAsync(
+            "UpdateResultMatch",
+            new { MatchId = matchId, Result = result },
+            commandType: System.Data.CommandType.StoredProcedure) > 0;
+    }
 
+    public Task<bool> IsMatchCurrentRound(int matchId)
+    {
+        return _sqlConnection. QuerySingleOrDefaultAsync<bool>(
+            "IsMatchCurrentRound",
+            new { MatchId = matchId },
+            commandType: System.Data.CommandType.StoredProcedure
+        );
+    }
 }

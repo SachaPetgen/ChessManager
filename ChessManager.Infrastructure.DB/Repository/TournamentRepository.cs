@@ -124,24 +124,6 @@ public class TournamentRepository : ITournamentRepository
         ) > 0;
     }
     
-    public async Task<Tournament?> UpdateTournamentStatus(int tournamentId, Status status)
-    {
-        return await _sqlConnection.QuerySingleOrDefaultAsync<Tournament>(
-            "UpdateTournamentStatus",
-            new { TournamentId = tournamentId, Status = status },
-            commandType: System.Data.CommandType.StoredProcedure
-        );
-    }
-    
-    public async Task<bool> RefreshUpdateTime(int tournamentId)
-    {
-        return await _sqlConnection.ExecuteAsync(
-            "RefreshUpdateTimeTournament",
-            new { TournamentId = tournamentId },
-            commandType: System.Data.CommandType.StoredProcedure
-        ) > 0;
-    }
-    
     public async Task<bool> StartTournament(int tournamentId)
     {
         return await _sqlConnection.ExecuteAsync(
@@ -150,8 +132,22 @@ public class TournamentRepository : ITournamentRepository
             commandType: System.Data.CommandType.StoredProcedure
         ) > 0;
     }
+
+    public async Task<bool> StartNextRound(int tournamentId)
+    {
+        var x = await _sqlConnection.QueryFirstOrDefaultAsync<int>(
+            "StartNextRoundTournament",
+            new { TournamentId = tournamentId },
+            commandType: System.Data.CommandType.StoredProcedure);
+        return x > 0;
+    }
     
-    
-    
-    
+    public async Task<IEnumerable<Match>> GetMatches(int id)
+    {
+        return await _sqlConnection.QueryAsync<Match>(
+            "GetAllMatchesOfTournament",
+            new { TournamentId = id },
+            commandType: System.Data.CommandType.StoredProcedure
+        );
+    }
 }
